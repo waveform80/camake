@@ -1,0 +1,67 @@
+# OpenSSL Server Configuration File
+
+HOME = .
+RANDFILE = $ENV::HOME/.rnd
+
+[ req ]
+default_bits       = 1024
+default_keyfile    = privkey.pem
+distinguished_name = req_distinguished_name
+attributes         = req_attributes
+x509_extensions    = v3_ca # The extentions to add to a self-signed cert
+#req_extensions    = v3_req # The extensions to add to a certificate request
+string_mask        = nombstr # only accept ASCII printable chars for answers
+
+[ req_distinguished_name ]
+C           = "Country code (C, ISO-3166)"
+C_default   = GB
+C_min       = 2
+C_max       = 2
+O           = "Organization name (O)"
+O_max       = 64
+O_default   = Waveform
+CN          = "Server hostname or domain wildcard (CN)"
+CN_max      = 64
+CN_default  = *.waveform.org.uk
+emailAddress         = "Administrator's e-mail address"
+emailAddress_max     = 64
+emailAddress_default = postmaster@waveform.org.uk
+
+[ req_attributes ]
+challengePassword      = A challenge password
+challengePassword_min  = 4
+challengePassword_max  = 20
+unstructuredName       = An optional company name
+
+[ server ]
+basicConstraints       = CA:FALSE
+nsCertType             = server
+nsCOmment              = "OpenSSL Server Certificate"
+subjectKeyIdentifier   = hash
+authorityKeyIdentifier = keyid,issuer:always
+extendedKeyUsage       = serverAuth
+keyUsage               = digitalSignature, keyEncipherment
+
+[ usr_cert ]
+basicConstraints       = CA:FALSE
+#nsCertType             = server # generic internet server
+#nsCertType             = objsign # object signing
+#nsCertType             = client, email # typical client use
+#nsCertType             = client, email, objsign # everything (objsign is omitted by default)
+nsComment              = "OpenSSL Generated Certificate"
+subjectKeyIdentifier   = hash
+authorityKeyIdentifier = keyid,issuer
+
+[ v3_req ]
+basicConstraints       = CA:FALSE
+keyUsage               = nonRepudiation, digitalSignature, keyEncipherment
+
+[ v3_ca ]
+basicConstraints       = CA:TRUE
+subjectKeyIdentifier   = hash
+authorityKeyIdentifier = keyid:always,issuer:always
+
+[ crl_ext ]
+#issuerAltName         = issuer:copy
+authorityKeyIdentifier = keyid:always,issuer:always
+
