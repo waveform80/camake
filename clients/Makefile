@@ -17,8 +17,8 @@ $(KEYFILE):
 $(CSRFILE): $(KEYFILE)
 	@$(OPENSSL) req -config openssl.cnf -new -key $(KEYFILE) -out $@
 
-fingerprint:
-	@$(OPENSSL) x509 -config openssl.cnf -fingerprint -noout < $(CERTFILE)
+fingerprint: $(CERTFILE)
+	@$(OPENSSL) x509 -fingerprint -noout < $(CERTFILE)
 
 help:
 	@echo OpenSSL Client Certificate Makefile v1.0
