@@ -31,7 +31,8 @@ $(KEYFILE):
 	@chmod 440 $@
 
 fingerprint:
-	@$(OPENSSL) x509 -fingerprint -noout < $(CERTFILE)
+	@$(OPENSSL) x509 -fingerprint -md5 -noout < $(CERTFILE)
+	@$(OPENSSL) x509 -fingerprint -sha1 -noout < $(CERTFILE)
 
 $(CSRFILE): $(KEYFILE)
 	@sg $(GROUP) "$(OPENSSL) req -config openssl.cnf \
