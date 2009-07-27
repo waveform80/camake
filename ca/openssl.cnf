@@ -1,0 +1,73 @@
+# OpenSSL Certificate Authority Configuration File
+
+HOME = .
+RANDFILE = $ENV::HOME/.rnd
+
+[ ca ]
+default_ca = CA_default
+
+[ CA_default ]
+dir              = .
+new_certs_dir    = $dir/newcerts
+crl_dir          = $dir/crl
+database         = $dir/index
+serial           = $dir/serial
+RANDFILE         = $dir/private/.rand
+x509_extensions  = usr_cert
+unique_subject   = no
+name_opt         = ca_default
+cert_opt         = ca_default
+default_crl_days = 30
+default_days     = 365
+default_md       = sha1
+preserve         = no
+policy           = policy_match
+
+[ usr_cert ]
+basicConstraints        = CA:FALSE
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid,issuer:always
+nsCaRevocationUrl       = https://www.waveform.org.uk/ca-crl.pem
+
+[ policy_match ]
+countryName             = match
+stateOrProvinceName     = optional
+organizationName        = match
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = optional
+
+[ policy_anything ]
+countryName             = optional
+stateOrProvinceName     = optional
+localityName            = optional
+organizationName        = optional
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = optional
+
+[ req ]
+default_md              = sha1
+prompt                  = no
+distinguished_name      = root_ca_distinguished_name
+x509_extensions         = v3_ca # The extensions to add to a self-signed cert
+#req_extensions         = v3_req # The extensions to add to a certificate request
+string_mask             = nombstr # only accept ASCII printable chars for answers
+
+[ root_ca_distinguished_name ]
+CN = Waveform CA
+C  = GB
+O  = Waveform
+emailAddress = ca@waveform.org.uk
+
+[ v3_req ]
+basicConstraints        = CA:FALSE
+keyUsage                = nonRepudiation, digitalSignature, keyEncipherment
+
+[ v3_ca ]
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid:always,issuer:always
+basicConstraints        = CA:true
+
+[ crl_ext ]
+authorityKeyIdentifier  = keyid:always,issuer:always
