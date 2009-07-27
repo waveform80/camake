@@ -1,10 +1,10 @@
 OPENSSL=openssl
 
-# how many days the CA key should be good for (should be LONG!)
+# how many days the CA key should be good for (should be LONG for CAs)
 DURATION=3652
 
-# how many bits RSA keys should be
-BITS=2048
+# how many bits RSA keys should be (should be BIG for CAs, at least 2048)
+BITS=4096
 
 GROUP=ssl
 KEYFILE=private/ca-key.pem
