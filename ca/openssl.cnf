@@ -48,17 +48,25 @@ emailAddress            = optional
 
 [ req ]
 default_md              = sha1
-prompt                  = no
 distinguished_name      = root_ca_distinguished_name
 x509_extensions         = v3_ca # The extensions to add to a self-signed cert
 #req_extensions         = v3_req # The extensions to add to a certificate request
 string_mask             = nombstr # only accept ASCII printable chars for answers
 
 [ root_ca_distinguished_name ]
-CN = Waveform CA
-C  = GB
-O  = Waveform
-emailAddress = ca@waveform.org.uk
+C           = "ISO-3166 country code (C)"
+C_default   = "GB"
+C_min       = 2
+C_max       = 2
+O           = "Organization name (O)"
+O_max       = 64
+O_default   = "My Organization"
+CN          = "CA title (CN)"
+CN_max      = 64
+CN_default  = "Organization CA"
+emailAddress         = "CA owner's e-mail address"
+emailAddress_max     = 64
+emailAddress_default = ca@mydomain.com
 
 [ v3_req ]
 basicConstraints        = CA:FALSE
