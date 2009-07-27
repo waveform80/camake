@@ -28,7 +28,7 @@ temp: $(KEYFILE) $(CSRFILE)
 
 $(KEYFILE):
 	@sg $(GROUP) "$(OPENSSL) genrsa $(BITS) > $@"
-	@chmod 400 $@
+	@chmod 440 $@
 
 fingerprint:
 	@$(OPENSSL) x509 -fingerprint -noout < $(CERTFILE)
@@ -46,7 +46,7 @@ $(CERTFILE): $(KEYFILE)
 $(KEYCERTFILE): $(KEYFILE) $(CERTFILE)
 	@sg $(GROUP) "$(OPENSSL) rsa -in $(KEYFILE) -outform PEM > $@"
 	@sg $(GROUP) "$(OPENSSL) x509 -in $(CERTFILE) -outform PEM >> $@"
-	@chmod 400 $@
+	@chmod 440 $@
 
 $(DHFILE):
 	@sg $(GROUP) "$(OPENSSL) dhparam -out $(DHFILE) $(BITS)"
