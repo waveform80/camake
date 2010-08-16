@@ -1,13 +1,14 @@
-OPENSSL=openssl
-
 # how many days self-signed/temp keys should be good for
 DURATION=365
 
 # how many bits RSA keys should be
 BITS=1024
 
-file=server
+# the group which will have read access to generated certificates
 GROUP=ssl
+
+file=$(shell hostname)
+OPENSSL=openssl
 KEYFILE=$(file)-key.pem
 CERTFILE=$(file)-cert.pem
 KEYCERTFILE=$(file)-keycert.pem
@@ -35,8 +36,18 @@ fingerprint:
 	@$(OPENSSL) x509 -fingerprint -sha1 -noout < $(CERTFILE)
 
 $(CSRFILE): $(KEYFILE)
-	@sg $(GROUP) "$(OPENSSL) req -config openssl.cnf \
-		-new -key $(KEYFILE) -out $@"
+	@{ \
+		export CERT_C="$(c)"; \
+		export CERT_O="$(o)"; \
+		export CERT_CN="$(cn)"; \
+		export CERT_EMAIL="$(email)"; \
+		[ ! -n "$$CERT_C" ]     && read -e -p "ISO-3166 country code (C): " CERT_C; \
+		[ ! -n "$$CERT_O" ]     && read -e -p "Organization name (O)    : " CERT_O; \
+		[ ! -n "$$CERT_CN" ]    && read -e -p "Hostname (CN)            : " CERT_CN; \
+		[ ! -n "$$CERT_EMAIL" ] && read -e -p "Administrator's e-mail   : " CERT_EMAIL; \
+		sg $(GROUP) "$(OPENSSL) req -config openssl.cnf \
+			-new -key $(KEYFILE) -out $@"; \
+	}
 
 $(CERTFILE): $(KEYFILE)
 	@sg $(GROUP) "$(OPENSSL) req -config openssl.cnf \
@@ -62,10 +73,12 @@ help:
 	@echo OpenSSL Server Certificate Makefile v1.0
 	@echo
 	@echo 'All targets take an optional "file=server" suffix which specifies the root'
-	@echo of the output filename. The default if this suffix is omitted is: $(file)
+	@echo 'of the output filename. The default if this suffix is omitted is: $(file)'
 	@echo
-	@echo make csr
-	@echo '  - creates a certificate signing request'
+	@echo make csr [c=country] [o=organization] [cn=hostname] [email=address]
+	@echo '  - creates a certificate signing request. You can specify the fields'
+	@echo '    of the certificate request on the command line as make variables'
+	@echo '    (c, o, cn, and email) or be prompted for them.'
 	@echo
 	@echo make self
 	@echo '  - creates a self-signed certificate'
@@ -80,6 +93,6 @@ help:
 	@echo '  - generates DH parameters for certain software (OpenVPN)'
 	@echo
 	@echo make fingerprint
-	@echo '  - print the fingerprint a certificate file'
+	@echo '  - print the SHA1 and MD5 fingerprints of a certificate file'
 	@echo
 

@@ -1,12 +1,19 @@
-OPENSSL=openssl
-
 # how many days the CA key should be good for (should be LONG for CAs)
-DURATION=3652
+CA_DURATION=3652
+
+# how many days to sign CSRs for (should be relatively short)
+SIGN_DURATION=365
+
+# how many days until the next CRL update
+CRL_DURATION=7
 
 # how many bits RSA keys should be (should be BIG for CAs, at least 2048)
 BITS=4096
 
+# the group which will have read access to generated certificates
 GROUP=ssl
+
+OPENSSL=openssl
 KEYFILE=private/ca-key.pem
 CERTFILE=ca-cert.pem
 CRLFILE=ca-crl.pem
@@ -16,20 +23,23 @@ certs:=$(requests:-csr.pem=-cert.pem)
 
 init: $(KEYFILE) $(CERTFILE)
 
-sign: $(certs)
+sign:
+	@test $${file:?"usage: make sign file=request"}
+	@$(MAKE) $(file)-cert.pem
 
 revoke: $(KEYFILE) $(CERTFILE)
-	@test $${cert:?"usage: make revoke cert=certificate"}
+	@test $${file:?"usage: make revoke file=certificate"}
 	@sg $(GROUP) "$(OPENSSL) ca -config openssl.cnf \
 		-keyfile $(KEYFILE) \
 		-cert $(CERTFILE) \
-		-revoke $(cert)"
+		-revoke $(file)-cert.pem"
 	@$(MAKE) gencrl
 
 gencrl: $(KEYFILE) $(CERTFILE)
 	@sg $(GROUP) "$(OPENSSL) ca -config openssl.cnf -gencrl \
 		-keyfile $(KEYFILE) \
 		-cert $(CERTFILE) \
+		-crldays $(CRL_DURATION) \
 		-out $(CRLFILE)"
 
 clean:
@@ -67,10 +77,20 @@ private:
 
 $(KEYFILE):
 	@$(MAKE) index serial crl newcerts private
-	@sg $(GROUP) "$(OPENSSL) req -config openssl.cnf -x509 -nodes \
-		-days $(DURATION) -newkey rsa:$(BITS) \
-		-keyform PEM -keyout $(KEYFILE) \
-		-outform PEM -out $(CERTFILE)"
+	@{ \
+		export CERT_C="$(c)"; \
+		export CERT_O="$(o)"; \
+		export CERT_CN="$(cn)"; \
+		export CERT_EMAIL="$(email)"; \
+		[ ! -n "$$CERT_C" ]     && read -e -p "ISO-3166 country code (C): " CERT_C; \
+		[ ! -n "$$CERT_O" ]     && read -e -p "Organization name (O)    : " CERT_O; \
+		[ ! -n "$$CERT_CN" ]    && read -e -p "CA title (CN)            : " CERT_CN; \
+		[ ! -n "$$CERT_EMAIL" ] && read -e -p "CA owner's e-mail address: " CERT_EMAIL; \
+		sg $(GROUP) "$(OPENSSL) req -config openssl.cnf -x509 -nodes \
+			-days $(CA_DURATION) -newkey rsa:$(BITS) \
+			-keyform PEM -keyout $(KEYFILE) \
+			-outform PEM -out $(CERTFILE)"; \
+	}
 	@sg $(GROUP) "$(OPENSSL) x509 -in $(CERTFILE) -outform DER > $(CERTFILE:.pem=.der)"
 	@sg $(GROUP) "$(OPENSSL) x509 -in $(CERTFILE) -text > $(CERTFILE:.pem=.txt)"
 
@@ -80,26 +100,26 @@ $(CERTFILE): $(KEYFILE)
 	@sg $(GROUP) "$(OPENSSL) ca -config openssl.cnf \
 		-keyfile $(KEYFILE) \
 		-cert $(CERTFILE) \
+		-days $(SIGN_DURATION) \
 		-in $< -out $@"
 	@[ -f $@ ] && rm $<
 
 help:
-	@echo OpenSSL Certificate Authority Makefile v1.0
+	@echo OpenSSL Certificate Authority Makefile v1.1
 	@echo
-	@echo make init
-	@echo '  - required initial setup command for new CA'
+	@echo make init [c=country] [o=organization] [cn=title] [email=address]
+	@echo '  - required initial setup command for new CA. You can specify the'
+	@echo '    fields of the root certficate on the command line as make'
+	@echo '    variables (c, o, cn, and email) or be prompted for them.'
 	@echo
-	@echo make sign
-	@echo '  - signs all *.csr files in this directory'
+	@echo make sign file=request
+	@echo '  - signs the specified certificate request'
 	@echo
-	@echo make revoke cert=filename
-	@echo '  - revokes certificate in named file and calls gencrl'
+	@echo make revoke file=certificate
+	@echo '  - revokes the specified certificate and calls gencrl'
 	@echo
 	@echo make gencrl
-	@echo '  - updates Certificate Revocation List (CRL)'
-	@echo
-	@echo make clean
-	@echo '  - removes all *.csr files in this directory'
+	@echo '  - updates the Certificate Revocation List (CRL)'
 	@echo
 	@echo make reset
 	@echo '  - destroys the CA and all its content (CAREFUL!)'
