@@ -11,7 +11,7 @@ CRL_DURATION=7
 BITS=4096
 
 # the group which will have read access to generated certificates
-GROUP=dave
+GROUP=ssl
 
 OPENSSL=openssl
 KEYFILE=private/ca-key.pem
