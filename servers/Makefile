@@ -41,10 +41,10 @@ $(CSRFILE): $(KEYFILE)
 		export CERT_O="$(o)"; \
 		export CERT_CN="$(cn)"; \
 		export CERT_EMAIL="$(email)"; \
-		[ ! -n "$$CERT_C" ]     && read -e -p "ISO-3166 country code (C): " CERT_C; \
-		[ ! -n "$$CERT_O" ]     && read -e -p "Organization name (O)    : " CERT_O; \
-		[ ! -n "$$CERT_CN" ]    && read -e -p "Hostname (CN)            : " CERT_CN; \
-		[ ! -n "$$CERT_EMAIL" ] && read -e -p "Administrator's e-mail   : " CERT_EMAIL; \
+		[ ! -n "$$CERT_C" ]     && read -p "ISO-3166 country code (C): " CERT_C; \
+		[ ! -n "$$CERT_O" ]     && read -p "Organization name (O)    : " CERT_O; \
+		[ ! -n "$$CERT_CN" ]    && read -p "Hostname (CN)            : " CERT_CN; \
+		[ ! -n "$$CERT_EMAIL" ] && read -p "Administrator's e-mail   : " CERT_EMAIL; \
 		sg $(GROUP) "$(OPENSSL) req -config openssl.cnf \
 			-new -key $(KEYFILE) -out $@"; \
 	}
