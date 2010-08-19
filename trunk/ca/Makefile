@@ -82,10 +82,12 @@ $(KEYFILE):
 		export CERT_O="$(o)"; \
 		export CERT_CN="$(cn)"; \
 		export CERT_EMAIL="$(email)"; \
+		export CERT_CRL="$(crl)"; \
 		[ ! -n "$$CERT_C" ]     && read -e -p "ISO-3166 country code (C): " CERT_C; \
 		[ ! -n "$$CERT_O" ]     && read -e -p "Organization name (O)    : " CERT_O; \
 		[ ! -n "$$CERT_CN" ]    && read -e -p "CA title (CN)            : " CERT_CN; \
 		[ ! -n "$$CERT_EMAIL" ] && read -e -p "CA owner's e-mail address: " CERT_EMAIL; \
+		[ ! -n "$$CERT_CRL" ]   && read -e -p "CA revocation URL        : " CERT_CRL; \
 		sg $(GROUP) "$(OPENSSL) req -config openssl.cnf -x509 -nodes \
 			-days $(CA_DURATION) -newkey rsa:$(BITS) \
 			-keyform PEM -keyout $(KEYFILE) \
@@ -97,20 +99,34 @@ $(KEYFILE):
 $(CERTFILE): $(KEYFILE)
 
 %-cert.pem : %-csr.pem
-	@sg $(GROUP) "$(OPENSSL) ca -config openssl.cnf \
-		-keyfile $(KEYFILE) \
-		-cert $(CERTFILE) \
-		-days $(SIGN_DURATION) \
-		-in $< -out $@"
+	@{ \
+		export CERT_C=foo; \
+		export CERT_O=foo; \
+		export CERT_CN=foo; \
+		export CERT_EMAIL=foo; \
+		export CERT_CRL=$$( \
+			openssl x509 -in $(CERTFILE) -text -noout -certopt \
+				no_header,no_version,no_serial,no_signame,no_validity,no_subject,no_issuer,no_pubkey,no_sigdump,no_aux | \
+			awk '\
+				BEGIN         {found=0;} \
+				/X509v3 CRL / {found=1; next;} \
+				/X509v3 /     {found=0;} \
+				/URI:/        {if (found) {found=0; print substr($$1,5);}}'); \
+		sg $(GROUP) "$(OPENSSL) ca -config openssl.cnf \
+			-keyfile $(KEYFILE) \
+			-cert $(CERTFILE) \
+			-days $(SIGN_DURATION) \
+			-in $< -out $@ -batch"; \
+	}
 	@[ -f $@ ] && rm $<
 
 help:
 	@echo OpenSSL Certificate Authority Makefile v1.1
 	@echo
-	@echo make init [c=country] [o=organization] [cn=title] [email=address]
+	@echo make init [c=country] [o=organization] [cn=title] [email=address] [crl=url]
 	@echo '  - required initial setup command for new CA. You can specify the'
 	@echo '    fields of the root certficate on the command line as make'
-	@echo '    variables (c, o, cn, and email) or be prompted for them.'
+	@echo '    variables (c, o, cn, email, and crl) or be prompted for them.'
 	@echo
 	@echo make sign file=request
 	@echo '  - signs the specified certificate request'

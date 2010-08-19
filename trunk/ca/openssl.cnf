@@ -14,19 +14,13 @@ database         = $dir/index
 serial           = $dir/serial
 RANDFILE         = $dir/private/.rand
 copy_extensions  = copy
-x509_extensions  = usr_cert
+x509_extensions  = usr_ext
 unique_subject   = no
 name_opt         = ca_default
 cert_opt         = ca_default
 default_md       = sha1
 preserve         = no
 policy           = policy_match
-
-[ usr_cert ]
-basicConstraints        = CA:FALSE
-subjectKeyIdentifier    = hash
-authorityKeyIdentifier  = keyid,issuer:always
-nsCaRevocationUrl       = https://www.waveform.org.uk/ca-crl.pem
 
 [ policy_match ]
 countryName             = match
@@ -49,19 +43,24 @@ emailAddress            = optional
 [ req ]
 default_md              = sha1
 distinguished_name      = root_ca_distinguished_name
-x509_extensions         = v3_ca # The extensions to add to a self-signed cert
-#req_extensions         = v3_req # The extensions to add to a certificate request
+x509_extensions         = ca_ext
 prompt                  = no
 string_mask             = nombstr # only accept ASCII printable chars for answers
 
-[ v3_req ]
-basicConstraints        = CA:FALSE
-keyUsage                = nonRepudiation, digitalSignature, keyEncipherment
+[ usr_ext ]
+basicConstraints        = critical,CA:FALSE
+keyUsage                = critical,digitalSignature,nonRepudiation,keyEncipherment
+extendedKeyUsage        = serverAuth,clientAuth,emailProtection
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid,issuer:always
+crlDistributionPoints   = URI:${ENV::CERT_CRL}
 
-[ v3_ca ]
-basicConstraints        = CA:TRUE
+[ ca_ext ]
+basicConstraints        = critical,CA:TRUE,pathlen:0
+keyUsage                = keyCertSign,cRLSign
 subjectKeyIdentifier    = hash
 authorityKeyIdentifier  = keyid:always,issuer:always
+crlDistributionPoints   = URI:${ENV::CERT_CRL}
 
 [ crl_ext ]
 authorityKeyIdentifier  = keyid:always,issuer:always
