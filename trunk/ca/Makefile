@@ -86,11 +86,11 @@ $(KEYFILE):
 		export CERT_CN="$(cn)"; \
 		export CERT_EMAIL="$(email)"; \
 		export CERT_CRL="$(crl)"; \
-		[ ! -n "$$CERT_C" ]     && read -e -p "ISO-3166 country code (C): " CERT_C; \
-		[ ! -n "$$CERT_O" ]     && read -e -p "Organization name (O)    : " CERT_O; \
-		[ ! -n "$$CERT_CN" ]    && read -e -p "CA title (CN)            : " CERT_CN; \
-		[ ! -n "$$CERT_EMAIL" ] && read -e -p "CA owner's e-mail address: " CERT_EMAIL; \
-		[ ! -n "$$CERT_CRL" ]   && read -e -p "CA revocation URL        : " CERT_CRL; \
+		[ ! -n "$$CERT_C" ]     && read -p "ISO-3166 country code (C): " CERT_C; \
+		[ ! -n "$$CERT_O" ]     && read -p "Organization name (O)    : " CERT_O; \
+		[ ! -n "$$CERT_CN" ]    && read -p "CA title (CN)            : " CERT_CN; \
+		[ ! -n "$$CERT_EMAIL" ] && read -p "CA owner's e-mail address: " CERT_EMAIL; \
+		[ ! -n "$$CERT_CRL" ]   && read -p "CA revocation URL        : " CERT_CRL; \
 		sg $(GROUP) "$(OPENSSL) req -config openssl.cnf -x509 -nodes \
 			-days $(CA_DURATION) -newkey rsa:$(BITS) \
 			-keyform PEM -keyout $(KEYFILE) \
