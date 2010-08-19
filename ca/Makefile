@@ -11,12 +11,18 @@ CRL_DURATION=7
 BITS=4096
 
 # the group which will have read access to generated certificates
-GROUP=ssl
+GROUP=dave
 
 OPENSSL=openssl
 KEYFILE=private/ca-key.pem
 CERTFILE=ca-cert.pem
 CRLFILE=ca-crl.pem
+
+export CERT_C:=$(c)
+export CERT_O:=$(o)
+export CERT_CN:=$(cn)
+export CERT_EMAIL:=$(email)
+export CERT_CRL:=$(crl)
 
 requests:=$(wildcard *-csr.pem)
 certs:=$(requests:-csr.pem=-cert.pem)
@@ -81,11 +87,6 @@ private:
 $(KEYFILE):
 	@$(MAKE) index serial crl newcerts private
 	@{ \
-		export CERT_C="$(c)"; \
-		export CERT_O="$(o)"; \
-		export CERT_CN="$(cn)"; \
-		export CERT_EMAIL="$(email)"; \
-		export CERT_CRL="$(crl)"; \
 		[ ! -n "$$CERT_C" ]     && read -p "ISO-3166 country code (C): " CERT_C; \
 		[ ! -n "$$CERT_O" ]     && read -p "Organization name (O)    : " CERT_O; \
 		[ ! -n "$$CERT_CN" ]    && read -p "CA title (CN)            : " CERT_CN; \
@@ -103,10 +104,6 @@ $(CERTFILE): $(KEYFILE)
 
 %-cert.pem : %-csr.pem
 	@{ \
-		export CERT_C=foo; \
-		export CERT_O=foo; \
-		export CERT_CN=foo; \
-		export CERT_EMAIL=foo; \
 		export CERT_CRL=$$( \
 			openssl x509 -in $(CERTFILE) -text -noout -certopt \
 				no_header,no_version,no_serial,no_signame,no_validity,no_subject,no_issuer,no_pubkey,no_sigdump,no_aux | \
