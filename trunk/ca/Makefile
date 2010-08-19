@@ -50,9 +50,12 @@ reset: clean
 		crl/ \
 		newcerts/ \
 		private/ \
-		serial{,.old} \
-		index{,.old} \
-		index.attr{,.old} \
+		serial \
+		serial.old \
+		index \
+		index.old \
+		index.attr \
+		index.attr.old \
 		$(KEYFILE) \
 		$(CERTFILE) \
 		$(CERTFILE:.pem=.der) \
