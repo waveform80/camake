@@ -49,15 +49,14 @@ string_mask             = nombstr # only accept ASCII printable chars for answer
 
 [ usr_ext ]
 basicConstraints        = critical,CA:FALSE
-keyUsage                = critical,digitalSignature,nonRepudiation,keyEncipherment
+keyUsage                = digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment
 extendedKeyUsage        = serverAuth,clientAuth,emailProtection
 subjectKeyIdentifier    = hash
 authorityKeyIdentifier  = keyid,issuer:always
 crlDistributionPoints   = URI:${ENV::CERT_CRL}
 
 [ ca_ext ]
-basicConstraints        = critical,CA:TRUE,pathlen:0
-keyUsage                = keyCertSign,cRLSign
+basicConstraints        = critical,CA:TRUE
 subjectKeyIdentifier    = hash
 authorityKeyIdentifier  = keyid:always,issuer:always
 crlDistributionPoints   = URI:${ENV::CERT_CRL}

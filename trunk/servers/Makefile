@@ -15,11 +15,11 @@ KEYCERTFILE=$(file)-keycert.pem
 CSRFILE=$(file)-csr.pem
 DHFILE=dh$(BITS).pem
 
-csr: $(KEYFILE) $(CSRFILE)
+csr: $(CSRFILE)
 
 convert: $(KEYCERTFILE) $(CERTFILE:.pem=.der) $(CERTFILE:.pem=.txt)
 
-self: $(KEYFILE) $(CERTFILE)
+self: $(CERTFILE)
 
 dhparam: $(DHFILE)
 

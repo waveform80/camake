@@ -15,7 +15,18 @@ $(KEYFILE):
 	@chmod 400 $@
 
 $(CSRFILE): $(KEYFILE)
-	@$(OPENSSL) req -config openssl.cnf -new -key $(KEYFILE) -out $@
+	@{ \
+		export CERT_C="$(c)"; \
+		export CERT_O="$(o)"; \
+		export CERT_CN="$(cn)"; \
+		export CERT_EMAIL="$(email)"; \
+		[ ! -n "$$CERT_C" ]     && read -p "ISO-3166 country code (C): " CERT_C; \
+		[ ! -n "$$CERT_O" ]     && read -p "Organization name (O)    : " CERT_O; \
+		[ ! -n "$$CERT_CN" ]    && read -p "Username (CN)            : " CERT_CN; \
+		[ ! -n "$$CERT_EMAIL" ] && read -p "User's e-mail            : " CERT_EMAIL; \
+		$(OPENSSL) req -config openssl.cnf \
+			-new -key $(KEYFILE) -out $@; \
+	}
 
 fingerprint: $(CERTFILE)
 	@$(OPENSSL) x509 -fingerprint -md5 -noout < $(CERTFILE)
