@@ -48,6 +48,10 @@ gencrl: $(KEYFILE) $(CERTFILE)
 		-crldays $(CRL_DURATION) \
 		-out $(CRLFILE)"
 
+fingerprint:
+	@$(OPENSSL) x509 -fingerprint -md5 -noout < $(CERTFILE)
+	@$(OPENSSL) x509 -fingerprint -sha1 -noout < $(CERTFILE)
+
 clean:
 	-rm $(requests)
 
