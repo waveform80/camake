@@ -5,7 +5,7 @@ DURATION=365
 BITS=1024
 
 # the group which will have read access to generated certificates
-GROUP=ssl
+GROUP=ssl-cert
 
 file=$(shell hostname)
 OPENSSL=openssl
